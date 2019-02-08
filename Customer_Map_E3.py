@@ -28,6 +28,12 @@ for gender in demographics['Gender'].unique():
     gender_options.append({'label':str(gender),
                            'value':gender})
 
+state_options = []
+for state in demographics['zip_state'].unique():
+    state_options.append({'label':str(state),
+                           'value':state})
+
+
 
 app = dash.Dash()
 
@@ -53,7 +59,15 @@ app.layout = html.Div([html.H1('Customer Map', style={'textAlign':'center'}),
                                                                     start_date=min(demographics.JoinDate),
                                                                     end_date=max(demographics.JoinDate)
                                                                     )
-                                                            )
+                                                            ),
+                                                    html.H6('State'),
+                                                    html.P(html.Div([
+                                                           dcc.Checklist(id='state-picker',
+                                                                         options=state_options,
+                                                                         values= demographics['zip_state'].unique().tolist()
+                                                                         )
+                                                           ])
+                                                           )
                                                     ])
                                             ],
                                 style = {'float':'left'},
@@ -83,12 +97,14 @@ app.layout = html.Div([html.H1('Customer Map', style={'textAlign':'center'}),
     dash.dependencies.Output('CustomerMap', 'figure'),
     [dash.dependencies.Input('gender-picker', 'values'),
      dash.dependencies.Input('date-picker-range', 'start_date'),
-     dash.dependencies.Input('date-picker-range', 'end_date')])
+     dash.dependencies.Input('date-picker-range', 'end_date'),
+     dash.dependencies.Input('state-picker', 'values')])
 
-def update_figure(selected_gender, start_date, end_date):    
+def update_figure(selected_gender, start_date, end_date, selected_state):    
      filtered_df = demographics.loc[(demographics['Gender'].isin(selected_gender)) &  
                                   (demographics['JoinDate'] >= start_date) &
-                                  (demographics['JoinDate'] <= end_date) ,]
+                                  (demographics['JoinDate'] <= end_date) & 
+                                  (demographics['zip_state'].isin(selected_state)),]
     
      zip_size = filtered_df.groupby(["zip_city", 'zip_longitude', 'zip_latitude']).size()
     
@@ -122,12 +138,14 @@ def update_figure(selected_gender, start_date, end_date):
     dash.dependencies.Output('table', 'data'),
     [dash.dependencies.Input('gender-picker', 'values'),
      dash.dependencies.Input('date-picker-range', 'start_date'),
-     dash.dependencies.Input('date-picker-range', 'end_date')])
+     dash.dependencies.Input('date-picker-range', 'end_date'),
+     dash.dependencies.Input('state-picker', 'values')])
 
-def update_table(selected_gender, start_date, end_date):    
+def update_table(selected_gender, start_date, end_date, selected_state):    
     filtered_df = demographics.loc[(demographics['Gender'].isin(selected_gender)) &  
                                   (demographics['JoinDate'] >= start_date) &
-                                  (demographics['JoinDate'] <= end_date), ]
+                                  (demographics['JoinDate'] <= end_date) &
+                                  (demographics['zip_state'].isin(selected_state)),]
     return filtered_df.to_dict("rows")
 
 if __name__ == '__main__':
