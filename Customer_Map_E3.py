@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 Title: Customer Map on demographics Data solutions for Exercise 3 (Tabs)
-Author: Patrick Glettig
-Date: 17.11.2018
 """
 # import os
 import pandas as pd
@@ -84,16 +82,15 @@ app.layout = html.Div([html.H1('Customer Map', style={'textAlign':'center'}),
 @app.callback(
     dash.dependencies.Output('CustomerMap', 'figure'),
     [dash.dependencies.Input('gender-picker', 'values'),
-     dash.dependencies.Input('date-picker-range', 'join_start_date'),
-     dash.dependencies.Input('date-picker-range', 'join_end_date')])
+     dash.dependencies.Input('date-picker-range', 'start_date'),
+     dash.dependencies.Input('date-picker-range', 'end_date')])
 
 def update_figure(selected_gender, start_date, end_date):    
      filtered_df = demographics.loc[(demographics['Gender'].isin(selected_gender)) &  
-                                  (demographics['JoinDate'] >= join_start_date) &
-                                  (demographics['JoinDate'] <= join_end_date) ,]
-     zip_size = demographics.groupby(["zip_city"]).size()
+                                  (demographics['JoinDate'] >= start_date) &
+                                  (demographics['JoinDate'] <= end_date) ,]
     
-     zip_size = demographics.groupby(["zip_city", 'zip_longitude', 'zip_latitude']).size()
+     zip_size = filtered_df.groupby(["zip_city", 'zip_longitude', 'zip_latitude']).size()
     
      zipcity = zip_size.index.get_level_values("zip_city").tolist() 
      customerCount = zip_size.values.tolist()
@@ -124,13 +121,13 @@ def update_figure(selected_gender, start_date, end_date):
 @app.callback(
     dash.dependencies.Output('table', 'data'),
     [dash.dependencies.Input('gender-picker', 'values'),
-     dash.dependencies.Input('date-picker-range', 'join_start_date'),
-     dash.dependencies.Input('date-picker-range', 'join_end_date')])
+     dash.dependencies.Input('date-picker-range', 'start_date'),
+     dash.dependencies.Input('date-picker-range', 'end_date')])
 
 def update_table(selected_gender, start_date, end_date):    
     filtered_df = demographics.loc[(demographics['Gender'].isin(selected_gender)) &  
-                                  (demographics['JoinDate'] >= join_start_date) &
-                                  (demographics['JoinDate'] <= join_end_date), ]
+                                  (demographics['JoinDate'] >= start_date) &
+                                  (demographics['JoinDate'] <= end_date), ]
     return filtered_df.to_dict("rows")
 
 if __name__ == '__main__':
